@@ -21,6 +21,19 @@ App: http://localhost:8010 · Verwaltung: http://localhost:8010/admin/
   `.venv\Scripts\python manage.py import_legacy` (liest `apps/api/data/jds.db`)
 - Tests: `.venv\Scripts\python manage.py test`
 
+## Deployment (Render.com)
+
+`render.yaml` legt Web-Service und PostgreSQL an (Dashboard → New → Blueprint → Repository wählen).
+Manuell als Web-Service:
+
+- Build Command: `bash build.sh` (installiert Pakete, `collectstatic`, `migrate`)
+- Start Command: `gunicorn jds.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 60`
+- Umgebungsvariablen: `DATABASE_URL` (Render PostgreSQL), `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=0`,
+  `PYTHON_VERSION=3.13.5`, `MAILJET_API_KEY`, `MAILJET_SECRET_KEY`, `DEFAULT_FROM_EMAIL`
+
+Hostname und HTTPS werden über `RENDER_EXTERNAL_HOSTNAME` automatisch gesetzt. Quittungs-PDFs werden bei Bedarf neu
+erzeugt (Renders Dateisystem ist nicht dauerhaft).
+
 ## Aufbau
 
 ```

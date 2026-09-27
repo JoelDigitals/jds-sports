@@ -4,3 +4,8 @@ reportlab>=4.4
 pypdf>=5.5
 bcrypt>=4.1
 tzdata
+# Produktion (Render.com)
+gunicorn>=23
+whitenoise>=6.7
+dj-database-url>=2.2
+psycopg[binary]>=3.2

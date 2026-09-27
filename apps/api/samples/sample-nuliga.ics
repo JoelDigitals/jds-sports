@@ -1,0 +1,56 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//nuLiga//Schiedsrichter-Einsaetze//DE
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:nuliga-hvs-2026-4471-1001
+SEQUENCE:0
+DTSTART;TZID=Europe/Berlin:20261010T150000
+DTEND;TZID=Europe/Berlin:20261010T170000
+SUMMARY:Männer-Bezirksliga: SG Blieskastel - TV Kirkel
+LOCATION:Sporthalle Kirkel, Am Sportzentrum 1, 66359 Kirkel
+DESCRIPTION:Schiedsrichteransetzung nuLiga HVSaar\, Spielnummer 1001
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:nuliga-hvs-2026-4471-1002
+SEQUENCE:0
+DTSTART;TZID=Europe/Berlin:20261017T180000
+DTEND;TZID=Europe/Berlin:20261017T200000
+SUMMARY:Verbandsliga Frauen: HSG Saarpfalz - TG Saarbrücken
+LOCATION:Sporthalle Kirkel-Limbach, Schulstraße 5, 66359 Kirkel
+DESCRIPTION:Schiedsrichteransetzung nuLiga HVSaar\, Spielnummer 1002
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:nuliga-hvs-2026-4471-1003
+SEQUENCE:0
+DTSTART;TZID=Europe/Berlin:20261024T160000
+DTEND;TZID=Europe/Berlin:20261024T180000
+SUMMARY:Saarpokal 2. Runde: HSG Neunkirchen/Kirrberg - HG Saarlouis
+LOCATION:Erich-Kästner-Halle, Goebenstraße, 66538 Neunkirchen
+DESCRIPTION:Pokalrunde 2\, Spielnummer 1003
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:nuliga-hvs-2026-4471-1004
+SEQUENCE:0
+DTSTART;TZID=Europe/Berlin:20261031T140000
+DTEND;TZID=Europe/Berlin:20261031T180000
+SUMMARY:Freundschaftsspiel: TV Musterstadt - HSG Völklingen
+LOCATION:Sporthalle Musterstadt, Musterstraße 12, 66333 Musterstadt
+DESCRIPTION:Vorbereitungsspiel
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:nuliga-hvs-2026-4471-1005
+SEQUENCE:0
+DTSTART;TZID=Europe/Berlin:20261104T200000
+DTEND;TZID=Europe/Berlin:20261104T213000
+SUMMARY:Männer-Bezirksliga: SV Bous - JSG Blieskastel
+LOCATION:Sporthalle Bous, Saarbrücker Straße 30, 66763 Bous
+DESCRIPTION:Wochenspiel Mittwoch
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR

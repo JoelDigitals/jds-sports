@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Einstellungen{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold">Einstellungen</h1>
+<p class="mb-6 text-sm text-slate-500">Profil, Verband, Adresse und Gespannpartner.</p>
+<form method="post" class="grid gap-6 lg:grid-cols-2">
+  {% csrf_token %}
+  {% for e in form.non_field_errors %}<div class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 lg:col-span-2">{{ e }}</div>{% endfor %}
+  <section class="card space-y-4 p-5">
+    <h2 class="font-semibold">Person & Verband</h2>
+    <div class="grid grid-cols-2 gap-3">
+      <div>{% include 'partials/field.html' with f=form.first_name %}</div>
+      <div>{% include 'partials/field.html' with f=form.last_name %}</div>
+    </div>
+    {% if form.einziger_verband %}
+    {{ form.verband }}
+    <div><span class="lbl">Verband</span>
+      <div class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">🏛️ {{ form.einziger_verband.name }}</div>
+    </div>
+  {% else %}{% include 'partials/field.html' with f=form.verband %}{% endif %}
+    {% include 'partials/field.html' with f=form.verein %}
+  </section>
+  <section class="card space-y-4 p-5">
+    <h2 class="font-semibold">Adresse & Bankverbindung</h2>
+    {% include 'partials/field.html' with f=form.strasse %}
+    <div class="grid grid-cols-3 gap-3">
+      <div>{% include 'partials/field.html' with f=form.plz %}</div>
+      <div class="col-span-2">{% include 'partials/field.html' with f=form.ort %}</div>
+    </div>
+    {% include 'partials/field.html' with f=form.telefon %}
+    {% include 'partials/field.html' with f=form.iban %}
+  </section>
+  <section class="card space-y-4 p-5 lg:col-span-2">
+    <h2 class="font-semibold">Schiedsrichter</h2>
+    <div class="grid gap-4 md:grid-cols-3">
+      <div>{% include 'partials/field.html' with f=form.standard_rolle %}</div>
+      <div>{% include 'partials/field.html' with f=form.partner_name %}</div>
+      <div>{% include 'partials/field.html' with f=form.partner_adresse %}</div>
+    </div>
+  </section>
+  <div class="flex items-center gap-3 lg:col-span-2">
+    <button class="btn-primary">Speichern</button>
+    <a href="{% url 'password_change' %}" class="btn-secondary">Passwort ändern</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends 'accounts/auth_base.html' %}
+{% block title %}Passwort geändert{% endblock %}
+{% block formular %}
+<h1 class="mb-2 text-lg font-bold">Passwort geändert ✅</h1>
+<p class="text-sm text-slate-600">Du kannst dich jetzt mit deinem neuen Passwort anmelden.</p>
+<a href="{% url 'login' %}" class="btn-primary mt-5 w-full">Zur Anmeldung</a>
+{% endblock %}

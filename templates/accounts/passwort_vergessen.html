@@ -1,0 +1,12 @@
+{% extends 'accounts/auth_base.html' %}
+{% block title %}Passwort vergessen{% endblock %}
+{% block formular %}
+<h1 class="mb-1 text-lg font-bold">Passwort vergessen?</h1>
+<p class="mb-4 text-sm text-slate-500">Gib die E-Mail-Adresse deines Kontos ein. Wir schicken dir einen Link, mit dem du ein neues Passwort festlegst.</p>
+<form method="post" class="space-y-4">
+  {% csrf_token %}
+  {% include 'partials/field.html' with f=form.email %}
+  <button class="btn-primary w-full">Link zum Zurücksetzen senden</button>
+  <p class="text-center text-sm"><a class="link" href="{% url 'login' %}">Zurück zur Anmeldung</a></p>
+</form>
+{% endblock %}

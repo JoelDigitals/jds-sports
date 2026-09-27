@@ -1,0 +1,118 @@
+{
+  "association": "HVS",
+  "associationName": "Handball-Verband Saar e.V.",
+  "season": "2026/27",
+  "version": "2026.3-offiziell",
+  "currency": "EUR",
+  "source": "Durchführungsbestimmungen HVSaar Saison 2026/2027 (final, hvsaar.de, Ziff. 7.2.1–7.2.11) + offizieller Abrechnungsbogen „Reisekostenabrechnung für Schiedsrichter“ (Stand 01.07.2024) – Originale im Repo: apps/api/data/vorlagen/",
+  "form": {
+    "title": "Reisekostenabrechnung für Schiedsrichter",
+    "templateFile": "HVS_Abrechnungsbogen_2024_07_01.pdf",
+    "note": "Offizieller DIN-A4-Bogen des HVS (Stand 01.07.2024) als Hintergrund, Daten als eigene Ebene darübergelegt, eine Seite je Spiel"
+  },
+  "classes": [
+    { "key": "oberliga", "name": "Oberliga Saar", "aliases": ["oberliga saar", "oberliga", "saarlandliga"], "rates": { "sr_gespann": 40, "sr_einzel": 40 }, "verified": true, "note": "DB 2026/27 Ziff. 7.2.1" },
+    { "key": "verbandsliga", "name": "Verbandsliga", "aliases": ["verbandsliga"], "rates": { "sr_gespann": 35, "sr_einzel": 35 }, "verified": true, "note": "DB 2026/27 Ziff. 7.2.1" },
+    { "key": "bezirksliga", "name": "Bezirksliga", "aliases": ["bezirksliga"], "rates": { "sr_gespann": 30, "sr_einzel": 30 }, "verified": true, "note": "DB 2026/27 Ziff. 7.2.1" },
+    { "key": "a_liga", "name": "A-Liga", "aliases": ["a-liga", "a liga", "kreisklasse a"], "rates": { "sr_gespann": 25, "sr_einzel": 25 }, "verified": true, "note": "DB 2026/27 Ziff. 7.2.1" },
+    { "key": "b_liga", "name": "B-Liga", "aliases": ["b-liga", "b liga", "kreisklasse b"], "rates": { "sr_gespann": 20, "sr_einzel": 20 }, "verified": true, "note": "DB 2026/27 Ziff. 7.2.1" },
+    { "key": "oberliga_jugend_ab", "name": "Oberliga Saar Jugend A und B", "aliases": ["oberliga saar jugend a", "oberliga saar jugend b", "oberliga jugend a", "oberliga jugend b", "oberliga a jugend", "oberliga b jugend", "jugendoberliga"], "rates": { "sr_gespann": 30, "sr_einzel": 30 }, "verified": true, "note": "DB 2026/27 Ziff. 7.2.2" },
+    { "key": "oberliga_jugend_cd", "name": "Oberliga Saar Jugend C und D", "aliases": ["oberliga saar jugend c", "oberliga saar jugend d", "oberliga jugend c", "oberliga jugend d", "oberliga c jugend", "oberliga d jugend"], "rates": { "sr_gespann": 25, "sr_einzel": 25 }, "verified": true, "note": "DB 2026/27 Ziff. 7.2.2" },
+    { "key": "bezirksliga_jugend_ab", "name": "Bezirksliga Jugend A und B", "aliases": ["bezirksliga jugend a", "bezirksliga jugend b", "bezirksliga a jugend", "bezirksliga b jugend"], "rates": { "sr_gespann": 25, "sr_einzel": 25 }, "verified": true, "note": "DB 2026/27 Ziff. 7.2.2" },
+    { "key": "bezirksliga_jugend_c", "name": "Bezirksliga Jugend C", "aliases": ["bezirksliga jugend c", "bezirksliga c jugend"], "rates": { "sr_gespann": 25, "sr_einzel": 25 }, "verified": true, "note": "DB 2026/27 Ziff. 7.2.2 (nur Jugend C gelistet)" },
+    { "key": "jpj", "name": "Jugend pfeift Jugend", "aliases": ["jugend pfeift jugend", "jpj"], "rates": { "sr_gespann": 15, "sr_einzel": 15 }, "verified": true, "note": "DB 2026/27 Ziff. 7.2.2" }
+  ],
+  "cupRounds": [
+    { "key": "quali", "name": "Pokal-Qualifikation", "rate": 25, "verified": true },
+    { "key": "r1", "name": "1. Runde", "rate": 30, "verified": true },
+    { "key": "r2_3", "name": "2. und 3. Runde (wenn keine Halbfinalturniere)", "rate": 35, "verified": true },
+    { "key": "halbfinalturnier", "name": "Halbfinalturnier", "rate": 25, "verified": true },
+    { "key": "final4", "name": "Final4", "rate": 30, "verified": true }
+  ],
+  "cupCapClass": null,
+  "cupNote": "Obergrenze (früher Oberliga-Satz) ist in den DB 2026/27 nicht mehr aufgeführt; Rundensätze direkt abgerechnet",
+  "friendlies": {
+    "explicit": [
+      { "key": "bundesliga_3liga", "name": "Bundesliga (Aktive) / 3. Liga", "rate": 40, "verified": true },
+      { "key": "regionalliga", "name": "Regionalliga Männer/Frauen", "rate": 30, "verified": true },
+      { "key": "auswahl_hvs", "name": "Spiele der Auswahlmannschaften des HVS (DB 7.2.5)", "rate": 25, "verified": true },
+      { "key": "qualifikation_rps_jugend", "name": "Qualifikation RPS Jugend A bis C (DB 7.2.5)", "rate": 25, "verified": true }
+    ],
+    "classRates": {
+      "oberliga": 20,
+      "verbandsliga": 15,
+      "bezirksliga": 15,
+      "a_liga": 15,
+      "b_liga": 15,
+      "oberliga_jugend_ab": 15,
+      "oberliga_jugend_cd": 15,
+      "bezirksliga_jugend_ab": 15,
+      "bezirksliga_jugend_c": 15
+    },
+    "classRatesNote": "Alle anderen Freundschaftsspiele entsprechend Klassenzugehörigkeit des Heimvereins – feste Sätze lt. DB 2026/27 Ziff. 7.2.3 (keine 50 %-Regel mehr)"
+  },
+  "tournamentGroups": [
+    {
+      "key": "turnier",
+      "name": "Turnier (DB 7.2.7)",
+      "tiers": [
+        { "key": "bis_30", "name": "Spielzeit bis zu 30 Minuten je Spiel", "jugend": 15, "aktive": 15 },
+        { "key": "2x20", "name": "Spielzeit 2×20 Minuten je Spiel", "jugend": 20, "aktive": 25 },
+        { "key": "2x25", "name": "Spielzeit 2×25 Minuten je Spiel", "jugend": 25, "aktive": 30 }
+      ]
+    },
+    {
+      "key": "vorbereitungsturnier",
+      "name": "Vorbereitungsturnier (DB 7.2.3)",
+      "tiers": [
+        { "key": "bis_30", "name": "je Spiel (bis 30 Minuten Spielzeit)", "jugend": 10, "aktive": 10 },
+        { "key": "ueber_30", "name": "je Spiel (über 30 Minuten Spielzeit)", "jugend": 15, "aktive": 15 }
+      ]
+    },
+    {
+      "key": "pokalturnier_jugend",
+      "name": "Pokalturnier Jugend (DB 7.2.4)",
+      "tiers": [
+        { "key": "jugend_de", "name": "Jugend D+E, je Spiel (reine Spielzeit)", "jugend": 10, "aktive": null },
+        { "key": "jugend_bc", "name": "Jugend B+C, je Spiel (reine Spielzeit)", "jugend": 15, "aktive": null }
+      ]
+    }
+  ],
+  "weekdayBonus": {
+    "amount": 5,
+    "days": [1, 2, 3, 4, 5],
+    "skipHolidays": true,
+    "verified": true,
+    "note": "DB 2026/27 Ziff. 7.2.8: Wochenspielpauschale Mo–Fr, ausgenommen gesetzliche Feiertage"
+  },
+  "doubleBonus": {
+    "amount": 5,
+    "verified": true,
+    "maxAbstandMinuten": 180, "note": "DB 2026/27 Ziff. 7.2.8: Doppelansetzungen (Spiele direkt hintereinander in derselben Halle). Umsetzung: Zuschlag je zusätzlichem Spiel, anteilig auf alle Spiele verteilt (2 Spiele: 2,50 € + 2,50 €); Fahrt-km ebenfalls anteilig. Spiele in anderen Hallen oder mit mehr als maxAbstandMinuten zwischen den Anpfiffen werden normal abgerechnet (volle Hin- und Rückfahrt, keine Pauschale)"
+  },
+  "cancellation": {
+    "factor": 0.5,
+    "travelFull": true,
+    "verified": true,
+    "note": "DB 2026/27 Ziff. 7.2.11: Bei Ausfall, sofern SR angereist war, Hälfte der Spesen + Fahrtkosten"
+  },
+  "travel": {
+    "kmRate": 0.3,
+    "kmRateMitfahrer": 0.32,
+    "kmRateVerified": true,
+    "kmRateNote": "DB 2026/27 Ziff. 7.2.10: 0,30 € pro gefahrenem km; +0,02 € für jeden weiteren Mitfahrer (= 0,32 € Gespann, lt. Abrechnungsbogen). Gemeinsame Anreise bei Gespann grundsätzlich Pflicht (DB 2026/27 S. 10)",
+    "borderRule": "Fahrtkosten dürfen immer erst ab Landesgrenze berechnet werden (DB 2026/27 Ziff. 7.2.11)"
+  },
+  "deadlines": {
+    "nonPaymentDays": 14,
+    "nonPaymentEmail": "hvs-schiedsrichterwart@hvsaar.de",
+    "submissionDeadline": "01-31",
+    "submissionNote": "DB 2026/27 Ziff. 7.2.11: Quittungen binnen 14 Tagen bei Nichtauszahlung an hvs-schiedsrichterwart@hvsaar.de; Abgabe aller Quittungen bis max. 31.01. des Folgejahres"
+  },
+  "otherRates": [
+    { "key": "beobachtung", "name": "Beobachtung / Coaching / Delegierte, je Spiel (DB 7.2.9)", "rate": 25, "verified": true },
+    { "key": "zns_pokalfinale", "name": "Zeitnehmer/Sekretäre/TD, je Spiel (Pokalfinale Ostermontag, DB 7.2.9)", "rate": 20, "verified": true },
+    { "key": "td_halbfinalturnier", "name": "Technische Delegierte (Pokal Halbfinalturnier Männer) – Pauschale (DB 7.2.9)", "rate": 75, "verified": true },
+    { "key": "spielaufsicht", "name": "Spielaufsicht (DB 7.2.9)", "rate": 40, "verified": true }
+  ]
+}

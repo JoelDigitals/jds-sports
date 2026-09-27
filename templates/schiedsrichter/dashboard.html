@@ -1,0 +1,102 @@
+{% extends 'schiedsrichter/base_sr.html' %}
+{% load sr %}
+{% block title %}Schiedsrichter{% endblock %}
+{% block h1 %}Dashboard{% endblock %}
+{% block untertitel %}Saison {{ d.saison }} · Regelwerk {{ d.version }}{% endblock %}
+{% block aktionen %}<a href="{% url 'sr:einsatz_neu' %}" class="btn-secondary">+ Einsatz</a><a href="{% url 'sr:import' %}" class="btn-primary">Kalender importieren</a>{% endblock %}
+{% block sr_content %}
+{% include 'schiedsrichter/_automatik.html' %}
+{% if not eigenes_regelwerk %}
+  <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+    Für <strong>{{ user.verband }}</strong> ist noch kein eigenes Spesen-Regelwerk hinterlegt – es werden vorläufig die Sätze des HV Saar verwendet.
+  </div>
+{% endif %}
+
+<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+  <div class="card p-4"><div class="text-xs font-medium uppercase text-slate-500">Spesen (Saison)</div><div class="mt-1 text-2xl font-bold text-orange-600">{{ d.spesen|eur }}</div><div class="text-xs text-slate-400">{{ d.einsaetze }} Einsätze</div></div>
+  <div class="card p-4"><div class="text-xs font-medium uppercase text-slate-500">Geleitet</div><div class="mt-1 text-2xl font-bold text-green-600">{{ d.geleitet }}</div></div>
+  <div class="card p-4"><div class="text-xs font-medium uppercase text-slate-500">Noch offen</div><div class="mt-1 text-2xl font-bold text-amber-600">{{ d.offen_summe|eur }}</div><div class="text-xs text-slate-400">{{ d.offen_anzahl }} Quittung(en)</div></div>
+  <div class="card p-4"><div class="text-xs font-medium uppercase text-slate-500">Fahrt-km</div><div class="mt-1 text-2xl font-bold">{{ d.km|zahl }} km</div></div>
+  <div class="card p-4"><div class="text-xs font-medium uppercase text-slate-500">Nächster Einsatz</div>
+    {% with n=d.naechste.0 %}<div class="mt-1 text-2xl font-bold">{% if n %}{{ n.game_datetime|date:'D, d.m.' }}{% else %}–{% endif %}</div><div class="text-xs text-slate-400">{% if n %}{{ n.game_datetime|date:'H:i' }} Uhr{% else %}keine anstehenden{% endif %}</div>{% endwith %}
+  </div>
+</div>
+
+<div class="mt-6 grid gap-6 lg:grid-cols-2">
+  <section class="card p-5">
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="text-sm font-semibold">Kommende Spiele <span class="font-normal text-slate-400">({{ d.naechste_gesamt }})</span></h2>
+      <a href="{% url 'sr:einsaetze' %}" class="link text-xs">alle Einsätze →</a>
+    </div>
+    {% if d.naechste %}
+      <p class="mb-2 text-xs text-slate-400">Der ausgefüllte HVS-Abrechnungsbogen liegt 3 Tage vor dem Spiel automatisch bereit – Fahrt-km werden automatisch berechnet.</p>
+      <ul class="max-h-[440px] divide-y divide-slate-100 overflow-y-auto pr-1">
+        {% for n in d.naechste %}
+          <li class="flex items-center justify-between gap-3 py-3">
+            <a href="{% url 'sr:einsatz' n.pk %}" class="min-w-0">
+              <div class="truncate text-sm font-medium">{{ n.begegnung }}</div>
+              <div class="truncate text-xs text-slate-500">{{ n.game_datetime|date:'D, d.m.Y · H:i' }} Uhr · {{ n.league }}{% if n.hall %} · {{ n.hall }}{% endif %}</div>
+            </a>
+            <div class="flex shrink-0 flex-col items-end gap-1">
+              <div class="flex items-center gap-2">
+                <span class="badge bg-{{ n.status|ton }}-100 text-{{ n.status|ton }}-800">{{ n.get_status_display }}</span>
+                <span class="text-sm font-semibold tabular-nums">{{ n.expense_total|eur }}</span>
+              </div>
+              <form method="post" action="{% url 'sr:quittung_vorbereiten' n.pk %}" target="_blank">{% csrf_token %}
+                <button class="text-xs font-medium text-orange-600 hover:underline">Abrechnungsbogen (PDF)</button>
+              </form>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="py-6 text-center text-sm text-slate-500">Keine anstehenden Einsätze. Importiere deine Ansetzungen aus nuLiga/handball.net (ICS) oder Handball360 (CSV).</p>
+    {% endif %}
+  </section>
+
+  <div class="space-y-6">
+    <section class="card p-5">
+      <h2 class="mb-3 text-sm font-semibold">Fristen-Wächter</h2>
+      {% if not d.fristen and not d.ueberfaellig %}
+        <p class="text-sm text-slate-500">Aktuell keine offenen Fristen. Alle Quittungen sind ausgeglichen.</p>
+      {% endif %}
+      <div class="space-y-3">
+        {% for f in d.fristen %}
+          <div class="flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            <div><span class="font-semibold">{{ f.anzahl }} offene Quittung(en)</span> aus {{ f.jahr }}<div class="text-amber-700">Einreichung bis {{ f.frist }} beim SR-Wart (DB 7.2.11)</div></div>
+            <span class="text-sm font-bold tabular-nums">{{ f.summe|eur }}</span>
+          </div>
+        {% endfor %}
+        {% for u in d.ueberfaellig %}
+          <div class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
+            <span class="font-semibold">Nichtauszahlung Quittung Nr. {{ u.receipt.pk }}:</span> Frist von {{ u.limit }} Tagen überschritten ({{ u.tage }} Tage).
+            <div class="mt-0.5">E-Mail an {{ d.nichtauszahlung_email }} → <a class="link" href="{% url 'sr:quittungen' %}">Quittungen</a></div>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="card p-5">
+      <div class="mb-3 flex items-center justify-between">
+        <h2 class="text-sm font-semibold">Letzte Quittungen</h2>
+        <a href="{% url 'sr:quittungen' %}" class="link text-xs">alle anzeigen →</a>
+      </div>
+      {% if d.letzte_quittungen %}
+        <ul class="divide-y divide-slate-100">
+          {% for r in d.letzte_quittungen %}
+            <li class="flex items-center justify-between py-2 text-sm">
+              <a class="text-slate-600 hover:underline" href="{% url 'sr:quittung_pdf' r.pk %}" target="_blank">Nr. {{ r.pk }} · {{ r.created_at|date:'d.m.Y' }}</a>
+              <span class="flex items-center gap-2">
+                <span class="badge bg-{{ r.payout_status|ton }}-100 text-{{ r.payout_status|ton }}-800">{{ r.get_payout_status_display }}</span>
+                <span class="font-semibold tabular-nums">{{ r.total|eur }}</span>
+              </span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-sm text-slate-500">Noch keine Quittungen erstellt.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

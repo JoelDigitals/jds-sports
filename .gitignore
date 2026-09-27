@@ -1,0 +1,18 @@
+node_modules/
+dist/
+*.local
+.env
+apps/api/data/*.db
+apps/api/data/*.db-journal
+apps/api/data/receipts/
+*.log
+.DS_Store
+Thumbs.db
+
+# Django
+.venv/
+__pycache__/
+*.pyc
+db.sqlite3
+media/
+staticfiles/

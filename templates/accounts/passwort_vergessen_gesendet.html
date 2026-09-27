@@ -1,0 +1,8 @@
+{% extends 'accounts/auth_base.html' %}
+{% block title %}E-Mail gesendet{% endblock %}
+{% block formular %}
+<h1 class="mb-2 text-lg font-bold">Schau in dein Postfach ✉️</h1>
+<p class="text-sm text-slate-600">Falls ein Konto mit dieser E-Mail-Adresse existiert, haben wir dir einen Link zum Zurücksetzen des Passworts geschickt. Er ist 24 Stunden gültig.</p>
+<p class="mt-3 text-sm text-slate-500">Keine E-Mail erhalten? Prüfe den Spam-Ordner oder <a class="link" href="{% url 'password_reset' %}">fordere einen neuen Link an</a>.</p>
+<a href="{% url 'login' %}" class="btn-secondary mt-5 w-full">Zur Anmeldung</a>
+{% endblock %}

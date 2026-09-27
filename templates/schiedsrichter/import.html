@@ -1,0 +1,23 @@
+{% extends 'schiedsrichter/base_sr.html' %}
+{% block title %}Kalender-Import{% endblock %}
+{% block h1 %}Kalender-Import{% endblock %}
+{% block untertitel %}Ansetzungen aus nuLiga, handball.net oder Handball360 übernehmen{% endblock %}
+{% block sr_content %}
+<div class="grid gap-6 lg:grid-cols-3">
+  <form method="post" enctype="multipart/form-data" class="card space-y-4 p-5 lg:col-span-2">
+    {% csrf_token %}
+    {% for e in form.non_field_errors %}<div class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{{ e }}</div>{% endfor %}
+    {% include 'partials/field.html' with f=form.source %}
+    {% include 'partials/field.html' with f=form.datei %}
+    {% include 'partials/field.html' with f=form.webcal_url %}
+    <button class="btn-primary">Analysieren</button>
+    <p class="text-xs text-slate-400">Im nächsten Schritt siehst du, welche Einsätze neu, geändert oder unverändert sind, und wählst aus, was übernommen wird. Fahrt-km werden danach automatisch berechnet.</p>
+  </form>
+  <aside class="card space-y-3 p-5 text-sm text-slate-600">
+    <h2 class="font-semibold text-slate-900">So bekommst du die Datei</h2>
+    <p><strong>nuLiga:</strong> Persönlicher Bereich → SR-Einsätze → iCal-Export.</p>
+    <p><strong>handball.net:</strong> Kalender-Abo-Link (webcal://…) kopieren.</p>
+    <p><strong>Handball360:</strong> Schiedsrichterplattform → Ansetzungen → Tabelle als CSV exportieren. Die Spielnummer (z. B. <code>2627SAROLCJMA0501</code>) wird vollständig übernommen.</p>
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Passwort ändern{% endblock %}
+{% block content %}
+<a href="{% url 'einstellungen' %}" class="text-sm text-slate-500 hover:underline">← Einstellungen</a>
+<h1 class="mt-2 text-2xl font-bold">Passwort ändern</h1>
+<form method="post" class="card mt-4 max-w-md space-y-4 p-5">
+  {% csrf_token %}
+  {% for e in form.non_field_errors %}<div class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{{ e }}</div>{% endfor %}
+  {% include 'partials/field.html' with f=form.old_password %}
+  {% include 'partials/field.html' with f=form.new_password1 %}
+  {% include 'partials/field.html' with f=form.new_password2 %}
+  <button class="btn-primary">Passwort ändern</button>
+</form>
+{% endblock %}

@@ -1,0 +1,6 @@
+Django>=5.2,<6
+django-waffle>=4.2
+reportlab>=4.4
+pypdf>=5.5
+bcrypt>=4.1
+tzdata

@@ -1,0 +1,27 @@
+{% extends 'accounts/auth_base.html' %}
+{% block title %}Registrieren{% endblock %}
+{% block breite %}max-w-lg{% endblock %}
+{% block formular %}
+<form method="post" class="space-y-4">
+  {% csrf_token %}
+  {% for e in form.non_field_errors %}<div class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{{ e }}</div>{% endfor %}
+  <div class="grid grid-cols-2 gap-3">
+    <div>{% include 'partials/field.html' with f=form.first_name %}</div>
+    <div>{% include 'partials/field.html' with f=form.last_name %}</div>
+  </div>
+  {% include 'partials/field.html' with f=form.email %}
+  {% if form.einziger_verband %}
+    {{ form.verband }}
+    <div><span class="lbl">Verband</span>
+      <div class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">🏛️ {{ form.einziger_verband.name }}</div>
+    </div>
+  {% else %}{% include 'partials/field.html' with f=form.verband %}{% endif %}
+  {% include 'partials/field.html' with f=form.verein %}
+  <div class="grid grid-cols-2 gap-3">
+    <div>{% include 'partials/field.html' with f=form.password1 %}</div>
+    <div>{% include 'partials/field.html' with f=form.password2 %}</div>
+  </div>
+  <p class="text-xs text-slate-400">Mindestens 8 Zeichen.</p>
+  <button class="btn-primary w-full">Konto erstellen</button>
+</form>
+{% endblock %}

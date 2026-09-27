@@ -1,0 +1,84 @@
+{% extends 'schiedsrichter/base_sr.html' %}
+{% load sr %}
+{% block title %}Einsätze{% endblock %}
+{% block h1 %}Einsätze{% endblock %}
+{% block untertitel %}Alle Ansetzungen mit automatischer Spesenberechnung{% endblock %}
+{% block aktionen %}<a href="{% url 'sr:einsatz_neu' %}" class="btn-primary">+ Einsatz manuell anlegen</a>{% endblock %}
+{% block sr_content %}
+<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+  <form method="get" class="flex flex-wrap items-end gap-3">
+    <label><span class="lbl">Status</span>
+      <select name="status" class="inp w-48" onchange="this.form.submit()">
+        <option value="">alle</option>
+        {% for k, v in status_choices %}<option value="{{ k }}" {% if k == status %}selected{% endif %}>{{ v }}</option>{% endfor %}
+      </select>
+    </label>
+    <label><span class="lbl">Monat</span><input type="month" name="monat" value="{{ monat }}" class="inp w-44" onchange="this.form.submit()"></label>
+    {% if status or monat %}<a href="{% url 'sr:einsaetze' %}" class="pb-2 text-sm text-slate-500 hover:underline">Filter zurücksetzen</a>{% endif %}
+  </form>
+</div>
+{% include 'schiedsrichter/_automatik.html' %}
+
+{% if gruppen %}
+<form method="post" action="{% url 'sr:quittung_neu' %}" id="sammel">
+  {% csrf_token %}
+  <div class="sticky top-16 z-10 mb-3 hidden items-center justify-between rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 text-sm" id="sammelleiste">
+    <span><strong id="anzahl">0</strong> Spiel(e) ausgewählt – je Spiel eine Quittung</span>
+    <button class="btn-primary py-1.5">Quittungen erstellen</button>
+  </div>
+  <div class="space-y-4">
+  {% for g in gruppen %}
+    <section class="card overflow-hidden">
+      <div class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-2 text-sm">
+        <span class="font-semibold">{{ g.datum|date:'D, d.m.Y' }}</span>
+        <span class="text-xs text-slate-500">{{ g.einsaetze|length }} Spiel(e) · Tagessumme {{ g.summe|eur }}</span>
+      </div>
+      <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <tbody class="divide-y divide-slate-100">
+        {% for a in g.einsaetze %}
+          <tr class="hover:bg-slate-50">
+            <td class="w-8 px-4 py-3">{% if a.hat_spesen and not a.quittungen.all %}<input type="checkbox" name="ids" value="{{ a.pk }}" class="h-4 w-4 accent-orange-600">{% endif %}</td>
+            <td class="w-14 py-3 tabular-nums text-slate-600">{{ a.game_datetime|date:'H:i' }}</td>
+            <td class="py-3 pr-3">
+              <a href="{% url 'sr:einsatz' a.pk %}" class="font-medium hover:underline">{{ a.begegnung }}</a>
+              <div class="text-xs text-slate-500">{{ a.hall|default:'–' }}{% if a.hallennummer %} ({{ a.hallennummer }}){% endif %}{% if a.spielnummer %} · Nr. {{ a.spielnummer }}{% else %} · <span class="font-medium text-red-600">Spiel-Nr. fehlt</span>{% endif %}</div>
+            </td>
+            <td class="py-3 pr-3"><div>{{ a.get_competition_type_display }}</div><div class="text-xs text-slate-500">{{ a.league }}</div></td>
+            <td class="whitespace-nowrap py-3 pr-3 text-xs text-slate-600">{{ a.get_role_display }}</td>
+            <td class="whitespace-nowrap py-3 pr-3 text-xs text-slate-600">{% if a.travel_km %}{{ a.travel_km|zahl }} km{% if a.travel_km_auto %} <span title="automatisch berechnet">🚗</span>{% endif %}{% elif a.km_fehler %}<span class="text-red-600" title="{{ a.km_fehler }}">km: Adresse prüfen</span>{% elif auto.km_laeuft %}<span class="text-sky-600">wird berechnet…</span>{% else %}<span class="text-amber-600">km fehlt</span>{% endif %}</td>
+            <td class="py-3 pr-3"><span class="badge bg-{{ a.status|ton }}-100 text-{{ a.status|ton }}-800">{{ a.get_status_display }}</span></td>
+            <td class="whitespace-nowrap py-3 pr-3 text-right font-semibold tabular-nums">{{ a.expense_total|eur }}</td>
+            <td class="whitespace-nowrap py-3 pr-4 text-right text-xs">
+              {% with q=a.quittungen.all.0 %}
+                {% if q %}<a class="link" href="{% url 'sr:quittung_pdf' q.pk %}" target="_blank">Quittung {{ q.pk }}</a>
+                {% else %}<a class="link" href="{% url 'sr:einsatz' a.pk %}">Details</a>{% endif %}
+              {% endwith %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </section>
+  {% endfor %}
+  </div>
+</form>
+<script>
+  const boxes = document.querySelectorAll('#sammel input[name=ids]');
+  const leiste = document.getElementById('sammelleiste');
+  boxes.forEach(b => b.addEventListener('change', () => {
+    const n = [...boxes].filter(x => x.checked).length;
+    document.getElementById('anzahl').textContent = n;
+    leiste.classList.toggle('hidden', n === 0);
+    leiste.classList.toggle('flex', n > 0);
+  }));
+</script>
+{% else %}
+  <div class="card p-10 text-center">
+    <div class="font-semibold">Keine Einsätze gefunden</div>
+    <p class="mt-1 text-sm text-slate-500">Importiere deine Ansetzungen als ICS-Datei aus nuLiga/handball.net oder als CSV aus Handball360 – oder lege Einsätze manuell an.</p>
+    <a href="{% url 'sr:import' %}" class="btn-primary mt-4">Kalender importieren</a>
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'schiedsrichter/base_sr.html' %}
+{% load sr %}
+{% block title %}Auswertung{% endblock %}
+{% block h1 %}Auswertung{% endblock %}
+{% block untertitel %}Saison {{ user.saison }} · Gesamt {{ z.gesamt|eur }}{% endblock %}
+{% block aktionen %}{% if csv_erlaubt %}<a href="{% url 'sr:export_csv' %}" class="btn-secondary">⬇ CSV-Export (Excel/Steuer)</a>{% endif %}{% endblock %}
+{% block sr_content %}
+<div class="grid gap-6 lg:grid-cols-2">
+  <section class="card p-5">
+    <h2 class="mb-3 text-sm font-semibold">Spesen nach Monat</h2>
+    {% for m in z.monate %}
+      <div class="mb-2">
+        <div class="flex justify-between text-xs"><span>{{ m.monat|date:'F Y' }} <span class="text-slate-400">· {{ m.anzahl }} Spiel(e)</span></span><span class="font-semibold tabular-nums">{{ m.summe|eur }}</span></div>
+        <div class="mt-1 h-2 rounded-full bg-slate-100"><div class="h-2 rounded-full bg-orange-500" style="width: {{ m.anteil }}%"></div></div>
+      </div>
+    {% empty %}
+      <p class="text-sm text-slate-500">Noch keine Einsätze in dieser Saison.</p>
+    {% endfor %}
+  </section>
+  <section class="card p-5">
+    <h2 class="mb-3 text-sm font-semibold">Spesen nach Spielklasse</h2>
+    <table class="w-full text-sm">
+      <tbody class="divide-y divide-slate-100">
+        {% for k in z.klassen %}
+          <tr><td class="py-2">{{ k.name }}</td><td class="py-2 text-right text-slate-500">{{ k.anzahl }}×</td><td class="py-2 text-right font-semibold tabular-nums">{{ k.summe|eur }}</td></tr>
+        {% empty %}
+          <tr><td class="py-2 text-slate-500">–</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</div>
+{% endblock %}

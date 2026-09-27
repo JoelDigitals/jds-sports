@@ -1,0 +1,36 @@
+{% with link=protocol|add:'://'|add:domain %}
+<!doctype html>
+<html lang="de">
+<body style="margin:0;background:#f8fafc;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 16px;">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;">
+        <tr><td style="padding:28px 28px 8px;">
+          <span style="display:inline-block;background:#ea580c;color:#ffffff;font-weight:700;font-size:13px;border-radius:10px;padding:8px 10px;">JDS</span>
+          <span style="font-weight:700;font-size:18px;margin-left:8px;vertical-align:middle;">JDS Sports</span>
+        </td></tr>
+        <tr><td style="padding:8px 28px 0;">
+          <h1 style="font-size:20px;margin:16px 0 8px;">Passwort zurücksetzen</h1>
+          <p style="font-size:14px;line-height:1.6;color:#334155;margin:0 0 20px;">
+            Hallo {{ user.first_name|default:user.email }},<br>
+            du hast angefordert, das Passwort für dein Konto <strong>{{ user.email }}</strong> zurückzusetzen.
+          </p>
+          <a href="{{ link }}{% url 'password_reset_confirm' uidb64=uid token=token %}"
+             style="display:inline-block;background:#ea580c;color:#ffffff;text-decoration:none;font-weight:700;font-size:14px;border-radius:10px;padding:12px 20px;">
+            Neues Passwort festlegen
+          </a>
+          <p style="font-size:12px;line-height:1.6;color:#64748b;margin:20px 0 0;">
+            Der Link ist 24 Stunden gültig. Falls der Button nicht funktioniert, kopiere diese Adresse in den Browser:<br>
+            <span style="word-break:break-all;">{{ link }}{% url 'password_reset_confirm' uidb64=uid token=token %}</span>
+          </p>
+          <p style="font-size:12px;line-height:1.6;color:#64748b;margin:16px 0 28px;">
+            Falls du das nicht warst, kannst du diese E-Mail ignorieren – dein Passwort bleibt unverändert.
+          </p>
+        </td></tr>
+      </table>
+      <p style="font-size:11px;color:#94a3b8;margin-top:16px;">JDS Sports · Die App für den Handball-Spielbetrieb</p>
+    </td></tr>
+  </table>
+</body>
+</html>
+{% endwith %}

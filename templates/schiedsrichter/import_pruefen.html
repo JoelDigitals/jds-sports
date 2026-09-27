@@ -1,0 +1,47 @@
+{% extends 'schiedsrichter/base_sr.html' %}
+{% block title %}Import prüfen{% endblock %}
+{% block h1 %}Import prüfen{% endblock %}
+{% block untertitel %}{{ a.total }} Termine · {{ a.new }} neu · {{ a.changed }} geändert · {{ a.unchanged }} unverändert{% if a.skipped %} · {{ a.skipped }} Zeilen übersprungen{% endif %}{% endblock %}
+{% block sr_content %}
+<form method="post">
+  {% csrf_token %}
+  <div class="card overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-left text-xs uppercase text-slate-500">
+        <tr>
+          <th class="px-4 py-2"><input type="checkbox" id="alle" class="h-4 w-4 accent-orange-600" checked></th>
+          <th class="py-2 pr-3">Aktion</th><th class="py-2 pr-3">Datum</th><th class="py-2 pr-3">Spiel-Nr.</th>
+          <th class="py-2 pr-3">Begegnung</th><th class="py-2 pr-3">Liga / Klasse</th><th class="py-2 pr-3">Halle</th><th class="py-2 pr-3">Status</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+      {% for item in a.items %}
+        {% with d=item.draft %}
+        <tr class="{% if item.action == 'unchanged' %}text-slate-400{% endif %}">
+          <td class="px-4 py-2"><input type="checkbox" name="auswahl" value="{{ forloop.counter0 }}" class="auswahl h-4 w-4 accent-orange-600" {% if item.action != 'unchanged' %}checked{% endif %}></td>
+          <td class="py-2 pr-3">
+            {% if item.action == 'new' %}<span class="badge bg-green-100 text-green-800">neu</span>
+            {% elif item.action == 'changed' %}<span class="badge bg-amber-100 text-amber-800">geändert</span><div class="text-xs text-amber-700">{{ item.changes|join:', ' }}</div>
+            {% else %}<span class="badge bg-slate-100 text-slate-600">unverändert</span>{% endif %}
+          </td>
+          <td class="whitespace-nowrap py-2 pr-3 tabular-nums">{{ d.game_datetime|slice:':10' }} {{ d.game_datetime|slice:'11:' }}</td>
+          <td class="py-2 pr-3 font-mono text-xs">{{ d.spielnummer|default:'–' }}</td>
+          <td class="py-2 pr-3">{{ d.home_team }}{% if d.away_team %} – {{ d.away_team }}{% endif %}</td>
+          <td class="py-2 pr-3">{{ d.league }}<div class="text-xs {% if d.klasse %}text-slate-500{% else %}text-amber-600{% endif %}">{{ d.klasse|default:'Klasse nicht erkannt' }}</div></td>
+          <td class="py-2 pr-3 text-xs">{{ d.hall_address|default:d.hall }}</td>
+          <td class="py-2 pr-3 text-xs">{{ d.status }}</td>
+        </tr>
+        {% endwith %}
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="mt-4 flex gap-2">
+    <button class="btn-primary">Ausgewählte übernehmen</button>
+    <a href="{% url 'sr:import' %}" class="btn-secondary">Abbrechen</a>
+  </div>
+</form>
+<script>
+  document.getElementById('alle').addEventListener('change', e => document.querySelectorAll('.auswahl').forEach(c => c.checked = e.target.checked));
+</script>
+{% endblock %}

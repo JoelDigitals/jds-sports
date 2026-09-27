@@ -1,0 +1,19 @@
+{% extends 'accounts/auth_base.html' %}
+{% block title %}Neues Passwort{% endblock %}
+{% block formular %}
+{% if validlink %}
+  <h1 class="mb-1 text-lg font-bold">Neues Passwort festlegen</h1>
+  <p class="mb-4 text-sm text-slate-500">für {{ form.user.email }}</p>
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    {% for e in form.non_field_errors %}<div class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{{ e }}</div>{% endfor %}
+    {% include 'partials/field.html' with f=form.new_password1 %}
+    {% include 'partials/field.html' with f=form.new_password2 %}
+    <button class="btn-primary w-full">Passwort speichern</button>
+  </form>
+{% else %}
+  <h1 class="mb-2 text-lg font-bold">Link ungültig</h1>
+  <p class="text-sm text-slate-600">Dieser Link ist abgelaufen oder wurde bereits verwendet.</p>
+  <a href="{% url 'password_reset' %}" class="btn-primary mt-5 w-full">Neuen Link anfordern</a>
+{% endif %}
+{% endblock %}

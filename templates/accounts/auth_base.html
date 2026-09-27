@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="flex min-h-[80vh] flex-col items-center justify-center py-6">
+  <a href="{% url 'login' %}" class="mb-6 flex items-center gap-3">
+    <span class="grid h-12 w-12 place-items-center rounded-2xl bg-orange-600 text-sm font-bold text-white">JDS</span>
+    <span>
+      <span class="block text-xl font-bold">JDS Sports</span>
+      <span class="block text-xs text-slate-500">Die App für den Handball-Spielbetrieb</span>
+    </span>
+  </a>
+  <div class="card w-full {% block breite %}max-w-md{% endblock %} p-6">
+    <div class="mb-5 grid grid-cols-2 rounded-lg bg-slate-100 p-1 text-sm font-semibold">
+      <a href="{% url 'login' %}" class="rounded-md py-1.5 text-center {% if request.resolver_match.url_name == 'login' %}bg-white shadow-sm{% else %}text-slate-500{% endif %}">Anmelden</a>
+      <a href="{% url 'registrieren' %}" class="rounded-md py-1.5 text-center {% if request.resolver_match.url_name == 'registrieren' %}bg-white shadow-sm{% else %}text-slate-500{% endif %}">Registrieren</a>
+    </div>
+    {% block formular %}{% endblock %}
+  </div>
+</div>
+{% endblock %}

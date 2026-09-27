@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load sr %}
+{% block title %}Übersicht{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <h1 class="text-2xl font-bold">Hallo {{ user.first_name }} 👋</h1>
+  <p class="text-sm text-slate-500">
+    {{ user.verband|default:'Kein Verband gewählt' }} · Saison {{ user.saison }}{% if user.verein %} · {{ user.verein }}{% endif %}
+  </p>
+</div>
+
+<h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Meine Bereiche</h2>
+{% if meine %}
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  {% for m in meine %}
+    <a href="{% url 'hub:modul' m.key %}" class="card group flex flex-col p-5 transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md">
+      <div class="flex items-start justify-between">
+        <span class="grid h-12 w-12 place-items-center rounded-xl bg-orange-50 text-2xl">{{ m.icon }}</span>
+        {% if m.verfuegbar %}
+          <span class="badge bg-green-100 text-green-800">aktiv</span>
+        {% else %}
+          <span class="badge bg-slate-100 text-slate-600">in Vorbereitung</span>
+        {% endif %}
+      </div>
+      <h3 class="mt-4 text-lg font-bold">{{ m.titel }}</h3>
+      <p class="mt-1 text-sm text-slate-500">{{ m.beschreibung }}</p>
+
+      {% if m.key == 'schiedsrichter' and kennzahlen.schiedsrichter %}
+        {% with k=kennzahlen.schiedsrichter %}
+        <dl class="mt-4 grid grid-cols-2 gap-2 border-t border-slate-100 pt-4 text-sm">
+          <div><dt class="text-xs text-slate-500">Spesen Saison</dt><dd class="font-bold text-orange-600">{{ k.spesen|eur }}</dd></div>
+          <div><dt class="text-xs text-slate-500">Noch offen</dt><dd class="font-bold text-amber-600">{{ k.offen_summe|eur }}</dd></div>
+          <div class="col-span-2"><dt class="text-xs text-slate-500">Nächster Einsatz</dt>
+            <dd class="truncate font-medium">{% if k.naechster %}{{ k.naechster.game_datetime|date:'D, d.m. H:i' }} · {{ k.naechster.begegnung }}{% else %}–{% endif %}</dd></div>
+        </dl>
+        {% endwith %}
+      {% else %}
+        <ul class="mt-4 space-y-1 border-t border-slate-100 pt-4 text-xs text-slate-500">
+          {% for f in m.funktionen %}<li>• {{ f }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+      <span class="mt-4 text-sm font-semibold text-orange-600 group-hover:underline">{% if m.verfuegbar %}Öffnen →{% else %}Mehr erfahren →{% endif %}</span>
+    </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+
+{% endblock %}

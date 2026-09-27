@@ -1,0 +1,13 @@
+{% extends 'accounts/auth_base.html' %}
+{% block title %}Anmelden{% endblock %}
+{% block formular %}
+<form method="post" class="space-y-4">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ next }}">
+  {% for e in form.non_field_errors %}<div class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{{ e }}</div>{% endfor %}
+  {% include 'partials/field.html' with f=form.username %}
+  {% include 'partials/field.html' with f=form.password %}
+  <div class="-mt-2 text-right text-sm"><a class="link" href="{% url 'password_reset' %}">Passwort vergessen?</a></div>
+  <button class="btn-primary w-full">Anmelden</button>
+</form>
+{% endblock %}

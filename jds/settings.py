@@ -4,25 +4,17 @@ import os
 import sys
 from pathlib import Path
 
+import environ
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-def _load_env_file(path: Path) -> None:
-    """Minimaler .env-Loader (KEY=wert je Zeile); echte Umgebungsvariablen haben Vorrang."""
-    if not path.exists():
-        return
-    for line in path.read_text(encoding='utf-8').splitlines():
-        line = line.strip()
-        if not line or line.startswith('#') or '=' not in line:
-            continue
-        key, value = line.split('=', 1)
-        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
-
-
-_load_env_file(BASE_DIR / '.env')
+# Konfiguration aus Umgebungsvariablen bzw. .env (echte Umgebungsvariablen, z. B. auf Render, haben Vorrang)
+env = environ.Env()
+environ.Env.read_env(BASE_DIR / '.env')
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'jds-sports-dev-secret-change-me')
-DEBUG = os.environ.get('DJANGO_DEBUG', '1') == '1'
+# Auf Render (RENDER=true) standardmäßig aus – die Debug-Seite würde sonst interne Einstellungen öffentlich zeigen
+DEBUG = os.environ.get('DJANGO_DEBUG', '0' if os.environ.get('RENDER') else '1') == '1'
 # Produktiv-Domain auf Render
 PRODUKTIV_HOST = 'jds-sports.onrender.com'
 
@@ -88,20 +80,27 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'jds.wsgi.application'
 
-if os.environ.get('DATABASE_URL'):
-    # Produktion (z. B. Render PostgreSQL)
-    import dj_database_url
+# Datenbank ausschließlich über DATABASE_URL – Server: PostgreSQL (Render), lokal z. B. sqlite:///db.sqlite3
+DATABASES = {
+    'default': env.db(),  # Liest die DATABASE_URL aus der .env Datei
+}
+if 'test' in sys.argv:
+    # Tests nie gegen die echte Datenbank: eigene URL oder SQLite im Speicher
+    DATABASES = {'default': env.db('TEST_DATABASE_URL', default='sqlite://:memory:')}
 
-    DATABASES = {'default': dj_database_url.parse(os.environ['DATABASE_URL'], conn_max_age=600, conn_health_checks=True)}
+_db = DATABASES['default']
+if _db['ENGINE'] == 'django.db.backends.sqlite3':
+    # km-Berechnung schreibt im Hintergrund – kurz warten statt „database is locked“
+    _db.setdefault('OPTIONS', {})['timeout'] = 20
+elif str(_db.get('PORT')) == '6543' or 'pooler' in str(_db.get('HOST', '')):
+    # Supabase/pgBouncer im Transaktionsmodus: keine dauerhaften Verbindungen,
+    # keine serverseitigen Cursor und keine vorbereiteten Statements (psycopg 3)
+    _db['CONN_MAX_AGE'] = 0
+    _db['DISABLE_SERVER_SIDE_CURSORS'] = True
+    _db.setdefault('OPTIONS', {})['prepare_threshold'] = None
 else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.environ.get('DJANGO_DB_PATH', BASE_DIR / 'db.sqlite3'),
-            # km-Berechnung schreibt im Hintergrund – kurz warten statt „database is locked“
-            'OPTIONS': {'timeout': 20},
-        }
-    }
+    _db['CONN_MAX_AGE'] = 600
+    _db['CONN_HEALTH_CHECKS'] = True
 
 AUTH_USER_MODEL = 'accounts.User'
 

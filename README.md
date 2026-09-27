@@ -9,6 +9,7 @@ Verein, Verband) sind im Dashboard angelegt und in Vorbereitung.
 ```bash
 python -m venv .venv
 .venv\Scripts\python -m pip install -r requirements.txt
+# .env anlegen: DATABASE_URL=sqlite:///db.sqlite3 (lokal) oder postgresql://… (Supabase/Render)
 .venv\Scripts\python manage.py migrate
 .venv\Scripts\python manage.py runserver 8010
 ```
@@ -27,9 +28,10 @@ App: http://localhost:8010 · Verwaltung: http://localhost:8010/admin/
 Manuell als Web-Service:
 
 - Build Command: `bash build.sh` (installiert Pakete, `collectstatic`, `migrate`)
-- Start Command: `gunicorn jds.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 60`
-- Umgebungsvariablen: `DATABASE_URL` (Render PostgreSQL), `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=0`,
-  `PYTHON_VERSION=3.13.5`, `MAILJET_API_KEY`, `MAILJET_SECRET_KEY`, `DEFAULT_FROM_EMAIL`
+- Start Command: `bash start.sh` (führt `migrate` aus und startet gunicorn)
+- Umgebungsvariablen: `DATABASE_URL` (PostgreSQL, z. B. Supabase-Pooler – Pflicht, die Datenbank kommt ausschließlich aus dieser URL),
+  `DJANGO_SECRET_KEY`, `MAILJET_API_KEY`, `MAILJET_SECRET_KEY`, `DEFAULT_FROM_EMAIL`
+- Python-Version kommt aus `.python-version`; `DEBUG` ist auf Render automatisch aus
 
 Hostname und HTTPS werden über `RENDER_EXTERNAL_HOSTNAME` automatisch gesetzt. Quittungs-PDFs werden bei Bedarf neu
 erzeugt (Renders Dateisystem ist nicht dauerhaft).
@@ -50,7 +52,9 @@ schiedsrichter/  Einsätze, Kalender-Import, Spesen-Engine, km-Berechnung, Quitt
 templates/       Oberfläche (Django-Templates, Tailwind per CDN)
 ```
 
-Daten: `db.sqlite3` · Quittungs-PDFs: `media/quittungen/`
+Datenbank: ausschließlich über `DATABASE_URL` (django-environ, `env.db()`); Tests laufen immer auf einer eigenen
+In-Memory-SQLite (oder `TEST_DATABASE_URL`). Supabase-Pooler (Port 6543) wird automatisch erkannt und passend konfiguriert.
+Quittungs-PDFs: `media/quittungen/`
 
 ## Regeln (HVS 2026/27)
 

@@ -135,9 +135,13 @@ USE_TZ = False
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']  # static/css/app.css = gebautes Tailwind (frontend/)
+# Robust, falls collectstatic im Build nicht lief: WhiteNoise liefert auch direkt aus static/ aus,
+# und eine fehlende Manifest-Zeile führt nicht zu einem 500er auf jeder Seite
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_MANIFEST_STRICT = False
 STORAGES = {
     'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
-    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage' if not DEBUG
+    'staticfiles': {'BACKEND': 'jds.storage.RobusterStaticStorage' if not DEBUG
                     else 'django.contrib.staticfiles.storage.StaticFilesStorage'},
 }
 MEDIA_URL = 'media/'
@@ -159,6 +163,19 @@ PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # Link 24 Stunden gültig
 
 # Automatische km-Berechnung im Hintergrund-Thread (in Tests synchron)
 KM_IM_HINTERGRUND = 'test' not in sys.argv
+
+# Fehler im Server-Log ausgeben (Render → Logs) – Django tut das mit DEBUG=False sonst nirgends
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {'einfach': {'format': '{asctime} {levelname} {name}: {message}', 'style': '{'}},
+    'handlers': {'console': {'class': 'logging.StreamHandler', 'formatter': 'einfach'}},
+    'root': {'handlers': ['console'], 'level': 'WARNING'},
+    'loggers': {
+        'django': {'handlers': ['console'], 'level': os.environ.get('DJANGO_LOG_LEVEL', 'INFO'), 'propagate': False},
+        'django.request': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+    },
+}
 
 # Feature-Flags (django-waffle): unbekannte Flags sind aus
 WAFFLE_FLAG_DEFAULT = False

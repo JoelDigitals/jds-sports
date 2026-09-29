@@ -21,10 +21,12 @@ App: http://localhost:8010 · Verwaltung: http://localhost:8010/admin/
 - Daten aus der alten Node-App übernehmen (Konten inkl. Passwörter, Einsätze, Quittungen):
   `.venv\Scripts\python manage.py import_legacy` (liest `apps/api/data/jds.db`)
 - Tests: `.venv\Scripts\python manage.py test`
+- CSS (Tailwind) nach Template-Änderungen neu bauen: `cd frontend && npm install && npm run build` →
+  `static/css/app.css` wird eingecheckt, der Server braucht kein Node
 
 ## Deployment (Render.com)
 
-`render.yaml` legt Web-Service und PostgreSQL an (Dashboard → New → Blueprint → Repository wählen).
+`render.yaml` legt den Web-Service in Frankfurt an (gleiche Region wie Supabase; Dashboard → New → Blueprint).
 Manuell als Web-Service:
 
 - Build Command: `bash build.sh` (installiert Pakete, `collectstatic`, `migrate`)
@@ -49,7 +51,7 @@ schiedsrichter/  Einsätze, Kalender-Import, Spesen-Engine, km-Berechnung, Quitt
   services/h360.py       CSV-Export der Handball360-Schiedsrichterplattform
   services/distance.py   Fahrt-km Wohnort → Halle (OpenStreetMap: Nominatim + OSRM, gecacht)
   services/pdf.py        Abrechnungsbogen: Original-Vordruck (data/vorlagen) + Datenebene (reportlab), zusammengeführt mit pypdf
-templates/       Oberfläche (Django-Templates, Tailwind per CDN)
+templates/       Oberfläche (Django-Templates, mobil optimiert; CSS aus frontend/ → static/css/app.css)
 ```
 
 Datenbank: ausschließlich über `DATABASE_URL` (django-environ, `env.db()`); Tests laufen immer auf einer eigenen

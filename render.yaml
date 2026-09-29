@@ -1,28 +1,18 @@
-# Render Blueprint: Web-Service + PostgreSQL (Dashboard → New → Blueprint)
-databases:
-  - name: jds-sports-db
-    plan: free
-    databaseName: jds_sports
-    user: jds_sports
-
+# Render Blueprint: Web-Service (Datenbank: Supabase PostgreSQL, URL im Dashboard als DATABASE_URL setzen)
 services:
   - type: web
     name: jds-sports
     runtime: python
     plan: free
+    # gleiche Region wie die Datenbank (Supabase eu-central-1 = Frankfurt) – jede Abfrage ist sonst ein Transatlantik-Roundtrip
+    region: frankfurt
     buildCommand: bash build.sh
     startCommand: bash start.sh
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.13.5
       - key: DATABASE_URL
-        fromDatabase:
-          name: jds-sports-db
-          property: connectionString
+        sync: false  # Supabase-Pooler-URL (postgresql://…:6543/postgres) im Render-Dashboard eintragen
       - key: DJANGO_SECRET_KEY
         generateValue: true
-      - key: DJANGO_DEBUG
-        value: "0"
       # Mailjet + Absender im Render-Dashboard eintragen (nicht ins Repo!)
       - key: MAILJET_API_KEY
         sync: false

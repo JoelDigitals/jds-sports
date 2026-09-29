@@ -6,14 +6,14 @@
 {% block aktionen %}<a href="{% url 'sr:einsatz_neu' %}" class="btn-primary">+ Einsatz manuell anlegen</a>{% endblock %}
 {% block sr_content %}
 <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
-  <form method="get" class="flex flex-wrap items-end gap-3">
+  <form method="get" class="grid w-full grid-cols-2 items-end gap-3 sm:flex sm:w-auto sm:flex-wrap">
     <label><span class="lbl">Status</span>
-      <select name="status" class="inp w-48" onchange="this.form.submit()">
+      <select name="status" class="inp sm:w-48" onchange="this.form.submit()">
         <option value="">alle</option>
         {% for k, v in status_choices %}<option value="{{ k }}" {% if k == status %}selected{% endif %}>{{ v }}</option>{% endfor %}
       </select>
     </label>
-    <label><span class="lbl">Monat</span><input type="month" name="monat" value="{{ monat }}" class="inp w-44" onchange="this.form.submit()"></label>
+    <label><span class="lbl">Monat</span><input type="month" name="monat" value="{{ monat }}" class="inp sm:w-44" onchange="this.form.submit()"></label>
     {% if status or monat %}<a href="{% url 'sr:einsaetze' %}" class="pb-2 text-sm text-slate-500 hover:underline">Filter zurücksetzen</a>{% endif %}
   </form>
 </div>
@@ -22,7 +22,7 @@
 {% if gruppen %}
 <form method="post" action="{% url 'sr:quittung_neu' %}" id="sammel">
   {% csrf_token %}
-  <div class="sticky top-16 z-10 mb-3 hidden items-center justify-between rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 text-sm" id="sammelleiste">
+  <div class="sticky top-16 z-10 mb-3 hidden items-center justify-between gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 text-sm shadow-sm" id="sammelleiste">
     <span><strong id="anzahl">0</strong> Spiel(e) ausgewählt – je Spiel eine Quittung</span>
     <button class="btn-primary py-1.5">Quittungen erstellen</button>
   </div>
@@ -37,19 +37,28 @@
       <table class="w-full text-sm">
         <tbody class="divide-y divide-slate-100">
         {% for a in g.einsaetze %}
-          <tr class="hover:bg-slate-50">
-            <td class="w-8 px-4 py-3">{% if a.hat_spesen and not a.quittungen.all %}<input type="checkbox" name="ids" value="{{ a.pk }}" class="h-4 w-4 accent-orange-600">{% endif %}</td>
-            <td class="w-14 py-3 tabular-nums text-slate-600">{{ a.game_datetime|date:'H:i' }}</td>
+          <tr class="align-top hover:bg-slate-50">
+            <td class="w-8 py-3 pl-3 pr-1 sm:px-4">{% if a.hat_spesen and not a.quittungen.all %}<input type="checkbox" name="ids" value="{{ a.pk }}" class="h-5 w-5 accent-orange-600 sm:h-4 sm:w-4">{% endif %}</td>
+            <td class="w-12 py-3 pr-2 tabular-nums text-slate-600">{{ a.game_datetime|date:'H:i' }}</td>
             <td class="py-3 pr-3">
               <a href="{% url 'sr:einsatz' a.pk %}" class="font-medium hover:underline">{{ a.begegnung }}</a>
               <div class="text-xs text-slate-500">{{ a.hall|default:'–' }}{% if a.hallennummer %} ({{ a.hallennummer }}){% endif %}{% if a.spielnummer %} · Nr. {{ a.spielnummer }}{% else %} · <span class="font-medium text-red-600">Spiel-Nr. fehlt</span>{% endif %}</div>
+              {# Handy: Liga, Rolle und km direkt unter der Begegnung #}
+              <div class="mt-0.5 text-xs text-slate-500 md:hidden">
+                {{ a.league }} · {{ a.get_role_display }} ·
+                {% if a.travel_km %}{{ a.travel_km|zahl }} km{% elif a.km_fehler %}<span class="text-red-600">km: Adresse prüfen</span>{% elif auto.km_laeuft %}<span class="text-sky-600">km wird berechnet…</span>{% else %}<span class="text-amber-600">km fehlt</span>{% endif %}
+                {% with q=a.quittungen.all.0 %}{% if q %} · <a class="link" href="{% url 'sr:quittung_pdf' q.pk %}" target="_blank">Quittung {{ q.pk }}</a>{% endif %}{% endwith %}
+              </div>
             </td>
-            <td class="py-3 pr-3"><div>{{ a.get_competition_type_display }}</div><div class="text-xs text-slate-500">{{ a.league }}</div></td>
-            <td class="whitespace-nowrap py-3 pr-3 text-xs text-slate-600">{{ a.get_role_display }}</td>
-            <td class="whitespace-nowrap py-3 pr-3 text-xs text-slate-600">{% if a.travel_km %}{{ a.travel_km|zahl }} km{% if a.travel_km_auto %} <span title="automatisch berechnet">🚗</span>{% endif %}{% elif a.km_fehler %}<span class="text-red-600" title="{{ a.km_fehler }}">km: Adresse prüfen</span>{% elif auto.km_laeuft %}<span class="text-sky-600">wird berechnet…</span>{% else %}<span class="text-amber-600">km fehlt</span>{% endif %}</td>
-            <td class="py-3 pr-3"><span class="badge bg-{{ a.status|ton }}-100 text-{{ a.status|ton }}-800">{{ a.get_status_display }}</span></td>
-            <td class="whitespace-nowrap py-3 pr-3 text-right font-semibold tabular-nums">{{ a.expense_total|eur }}</td>
-            <td class="whitespace-nowrap py-3 pr-4 text-right text-xs">
+            <td class="hidden py-3 pr-3 md:table-cell"><div>{{ a.get_competition_type_display }}</div><div class="text-xs text-slate-500">{{ a.league }}</div></td>
+            <td class="hidden whitespace-nowrap py-3 pr-3 text-xs text-slate-600 md:table-cell">{{ a.get_role_display }}</td>
+            <td class="hidden whitespace-nowrap py-3 pr-3 text-xs text-slate-600 md:table-cell">{% if a.travel_km %}{{ a.travel_km|zahl }} km{% if a.travel_km_auto %} <span title="automatisch berechnet">🚗</span>{% endif %}{% elif a.km_fehler %}<span class="text-red-600" title="{{ a.km_fehler }}">km: Adresse prüfen</span>{% elif auto.km_laeuft %}<span class="text-sky-600">wird berechnet…</span>{% else %}<span class="text-amber-600">km fehlt</span>{% endif %}</td>
+            <td class="hidden py-3 pr-3 md:table-cell"><span class="badge bg-{{ a.status|ton }}-100 text-{{ a.status|ton }}-800">{{ a.get_status_display }}</span></td>
+            <td class="whitespace-nowrap py-3 pr-3 text-right">
+              <div class="font-semibold tabular-nums">{{ a.expense_total|eur }}</div>
+              <span class="badge mt-1 bg-{{ a.status|ton }}-100 text-{{ a.status|ton }}-800 md:hidden">{{ a.get_status_display }}</span>
+            </td>
+            <td class="hidden whitespace-nowrap py-3 pr-4 text-right text-xs md:table-cell">
               {% with q=a.quittungen.all.0 %}
                 {% if q %}<a class="link" href="{% url 'sr:quittung_pdf' q.pk %}" target="_blank">Quittung {{ q.pk }}</a>
                 {% else %}<a class="link" href="{% url 'sr:einsatz' a.pk %}">Details</a>{% endif %}

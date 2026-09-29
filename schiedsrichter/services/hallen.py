@@ -55,16 +55,59 @@ def erkennen(a: Assignment, speichern: bool = True) -> Halle | None:
     return halle
 
 
+class _Verzeichnis:
+    """Alle Hallen einmal laden und im Speicher nachschlagen – statt je Einsatz eine Datenbankabfrage."""
+
+    def __init__(self):
+        self.hallen = list(Halle.objects.all())
+        self.nach_adresse = {h.adresse_key: h for h in self.hallen if h.adresse_key}
+        self.nach_name = {h.name_key: h for h in self.hallen if h.name_key}
+
+    def finden(self, a: Assignment) -> Halle | None:
+        adresse_key, name_key = schluessel(a.hall_address), schluessel(a.hall)
+        return (adresse_key and self.nach_adresse.get(adresse_key)) or (name_key and self.nach_name.get(name_key)) or None
+
+    def merken(self, h: Halle) -> None:
+        if h.adresse_key:
+            self.nach_adresse.setdefault(h.adresse_key, h)
+        if h.name_key:
+            self.nach_name.setdefault(h.name_key, h)
+
+
 def alle_erkennen(qs=None) -> int:
-    """Alle Einsätze durchgehen: erst Nummern lernen (chronologisch), dann fehlende Nummern ergänzen."""
+    """Alle Einsätze durchgehen: Hallen anlegen, Nummern lernen (neuestes Spiel gewinnt), fehlende Nummern ergänzen.
+
+    Schreibt nur, wenn sich etwas ändert – bei unverändertem Stand genügen zwei Abfragen.
+    """
     qs = Assignment.objects.all() if qs is None else qs
-    spiele = list(qs.order_by('game_datetime'))
+    spiele = [a for a in qs.order_by('game_datetime').only('id', 'hall', 'hall_address', 'hallennummer', 'game_datetime')
+              if a.hall.strip() or a.hall_address.strip()]
+    if not spiele:
+        return 0
+    v = _Verzeichnis()
+
+    # 1) Hallen anlegen und Nummern lernen
     for a in spiele:
-        if a.hallennummer:
-            erkennen(a)
+        h = v.finden(a)
+        if not h:
+            h = Halle.objects.create(
+                name=a.hall.strip() or a.hall_address.split(',')[0].strip(), name_key=schluessel(a.hall),
+                adresse=a.hall_address.strip(), adresse_key=schluessel(a.hall_address),
+            )
+            v.merken(h)
+        nummer = a.hallennummer.strip()
+        if nummer and (not h.nummer or h.nummer_stand is None or a.game_datetime >= h.nummer_stand):
+            if (h.nummer, h.nummer_stand) != (nummer, a.game_datetime):
+                h.nummer, h.nummer_stand = nummer, a.game_datetime
+                h.save(update_fields=['nummer', 'nummer_stand', 'aktualisiert'])
+
+    # 2) fehlende Nummern aus dem Verzeichnis ergänzen
     ergaenzt = 0
     for a in spiele:
         if not a.hallennummer:
-            erkennen(a)
-            ergaenzt += bool(a.hallennummer)
+            h = v.finden(a)
+            if h and h.nummer:
+                Assignment.objects.filter(pk=a.pk).update(hallennummer=h.nummer)
+                a.hallennummer = h.nummer
+                ergaenzt += 1
     return ergaenzt

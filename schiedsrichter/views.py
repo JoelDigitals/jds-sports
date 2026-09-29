@@ -11,7 +11,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from .forms import AssignmentForm, ImportForm, PayoutForm
-from .models import Assignment, Receipt
+from .models import Assignment, ImportAnalyse, Receipt
 from .services import automatik, hallen, importer, reports
 from .services.assignments import recalc_user
 from .services.receipts import QuittungFehler, aktualisieren, create_receipt, create_receipts, regenerate
@@ -25,13 +25,10 @@ def sr_bereich(view):
 
 
 def _pflegen(request) -> dict:
-    """Automatik bei jedem Aufruf der Übersichten: Spiele abschließen, fehlende km berechnen."""
+    """Automatik (Spiele abschließen, Quittungen bereitstellen, km berechnen) – auf dem Server im Hintergrund."""
     res = automatik.pflegen(request.user)
-    if res['abgeschlossen']:
-        messages.info(request, f"{res['abgeschlossen']} vergangene(s) Spiel(e) automatisch als geleitet markiert.")
-    for r in res['quittungen']:
-        spiele = ', '.join(a.begegnung for a in r.assignments.all())
-        messages.success(request, f'Abrechnungsbogen bereit: Quittung Nr. {r.pk} für {spiele}.')
+    for stufe, text in res['meldungen']:
+        getattr(messages, stufe)(request, text)
     return res
 
 
@@ -111,6 +108,7 @@ def einsatz(request, pk=None):
                     messages.info(request, f'{res.km:g} km (Hin + Rück, ca. {res.minutes:g} min je Richtung) · {res.von} → {res.nach}')
             if aktion == 'quittung':
                 return _quittung_erstellen(request, [a.pk])
+            automatik.anstossen(user)
             messages.success(request, 'Gespeichert. Spesen wurden neu berechnet.')
             return redirect('sr:einsatz', pk=a.pk)
 
@@ -165,16 +163,18 @@ def import_view(request):
         except importer.ImportFehler as e:
             form.add_error(None, str(e))
         else:
-            request.session['import_analyse'] = analyse
+            ImportAnalyse.objects.filter(user=request.user).delete()
+            request.session['import_analyse'] = ImportAnalyse.objects.create(user=request.user, daten=analyse).pk
             return redirect('sr:import_pruefen')
     return render(request, 'schiedsrichter/import.html', {'form': form})
 
 
 @sr_bereich
 def import_pruefen(request):
-    analyse = request.session.get('import_analyse')
-    if not analyse:
+    eintrag = ImportAnalyse.objects.filter(user=request.user, pk=request.session.get('import_analyse')).first()
+    if not eintrag:
         return redirect('sr:import')
+    analyse = eintrag.daten
     if request.method == 'POST':
         auswahl = {int(i) for i in request.POST.getlist('auswahl') if i.isdigit()}
         drafts = [item['draft'] for idx, item in enumerate(analyse['items']) if idx in auswahl]
@@ -182,7 +182,9 @@ def import_pruefen(request):
             messages.warning(request, 'Keine Einsätze ausgewählt.')
             return redirect('sr:import_pruefen')
         created, updated = importer.apply(request.user, analyse['source'], drafts)
-        del request.session['import_analyse']
+        eintrag.delete()
+        request.session.pop('import_analyse', None)
+        automatik.anstossen(request.user)
         messages.success(request, f'Import abgeschlossen: {created} neu, {updated} aktualisiert.')
         return redirect('sr:einsaetze')  # km berechnet die Einsatzliste automatisch im Hintergrund
     pack = pack_for_user(request.user)

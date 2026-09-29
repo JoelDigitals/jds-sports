@@ -1,0 +1,12 @@
+{
+  "name": "jds-sports-css",
+  "private": true,
+  "description": "Baut static/css/app.css aus den Django-Templates (Tailwind). Ergebnis wird eingecheckt – Render braucht kein Node.",
+  "scripts": {
+    "build": "tailwindcss -c tailwind.config.js -i app.src.css -o ../static/css/app.css --minify",
+    "watch": "tailwindcss -c tailwind.config.js -i app.src.css -o ../static/css/app.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}

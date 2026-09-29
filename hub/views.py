@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import redirect, render
@@ -15,7 +16,8 @@ def dashboard(request):
     from schiedsrichter.services import automatik
     from schiedsrichter.services.reports import kurzuebersicht
 
-    automatik.pflegen(request.user)
+    for stufe, text in automatik.pflegen(request.user)['meldungen']:
+        getattr(messages, stufe)(request, text)
     kennzahlen = {'schiedsrichter': kurzuebersicht(request.user)}
     return render(request, 'hub/dashboard.html', {'meine': meine, 'weitere': weitere, 'kennzahlen': kennzahlen})
 

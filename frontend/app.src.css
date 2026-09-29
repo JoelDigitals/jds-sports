@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body { padding-bottom: env(safe-area-inset-bottom); }
+  /* Raster-Elemente dürfen schmaler als ihr Inhalt werden – sonst schieben lange Texte die Seite auf dem Handy seitlich auf */
+  .grid > * { min-width: 0; }
+}
+
+@layer components {
+  /* Eingabefelder: auf dem Handy 16 px Schrift, sonst zoomt iOS beim Antippen ins Feld */
+  .inp { @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 shadow-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 sm:py-2 sm:text-sm; }
+  .lbl { @apply mb-1 block text-xs font-medium text-slate-600; }
+  .hint { @apply mt-1 block text-xs text-slate-400; }
+  /* Buttons: auf dem Handy mind. 44 px hoch (Touch-Ziel) */
+  .btn { @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:opacity-50 sm:min-h-0; }
+  .btn-primary { @apply btn bg-orange-600 text-white shadow-sm hover:bg-orange-700 active:bg-orange-800; }
+  .btn-secondary { @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:bg-slate-100; }
+  .btn-danger { @apply btn border border-red-200 bg-white text-red-700 hover:bg-red-50; }
+  .card { @apply rounded-2xl border border-slate-200 bg-white shadow-sm; }
+  .badge { @apply inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium; }
+  .link { @apply font-medium text-orange-600 hover:underline; }
+}

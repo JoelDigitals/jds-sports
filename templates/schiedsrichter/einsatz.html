@@ -41,11 +41,11 @@
         <div>{% include 'partials/field.html' with f=form.hall_address %}</div>
       </div>
       <div class="grid items-start gap-3 sm:grid-cols-2">
-        <div>
+        <div class="min-w-0">
           <span class="lbl">{{ form.travel_km.label }}</span>
           <div class="flex gap-2">
             {{ form.travel_km }}
-            <button name="aktion" value="km" class="btn-secondary whitespace-nowrap" title="Aus deiner Adresse und der Hallenadresse berechnen (speichert den Einsatz)">🚗 km berechnen</button>
+            <button name="aktion" value="km" class="btn-secondary shrink-0 whitespace-nowrap" title="Aus deiner Adresse und der Hallenadresse berechnen (speichert den Einsatz)">🚗 km berechnen</button>
           </div>
           <span class="hint">{{ form.travel_km.help_text }}</span>
           {% for e in form.travel_km.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}
@@ -53,7 +53,7 @@
           {% if obj.travel_km_auto %}<span class="hint text-green-700">✓ automatisch berechnet{% if obj.travel_minutes %} · ca. {{ obj.travel_minutes|floatformat:0 }} min je Richtung{% endif %}</span>{% endif %}
           {% if not user.strasse %}<span class="hint text-amber-700">Für die automatische Berechnung fehlt deine Adresse – <a class="link" href="{% url 'einstellungen' %}">Einstellungen</a>.</span>{% endif %}
         </div>
-        <div class="space-y-2 pt-6">
+        <div class="space-y-2 sm:pt-6">
           {% include 'partials/field.html' with f=form.travel_km_manual %}
           {% include 'partials/field.html' with f=form.travel_mitfahrer %}
         </div>
@@ -65,11 +65,16 @@
       {% include 'partials/field.html' with f=form.notes %}
     </section>
 
-    <div class="flex flex-wrap gap-2">
-      <button name="aktion" value="speichern" class="btn-primary">Speichern</button>
-      {% if obj and obj.hat_spesen and not quittung %}<button name="aktion" value="quittung" class="btn-secondary">Speichern & Quittung erstellen</button>{% endif %}
-      <a href="{% url 'sr:einsaetze' %}" class="btn-secondary">Zurück</a>
-      {% if obj %}<button name="aktion" value="loeschen" class="btn-danger ml-auto" formnovalidate onclick="return confirm('Einsatz wirklich löschen?')">Löschen</button>{% endif %}
+    {# Handy: Speichern fest über der Navigationsleiste; Zurück/Löschen im normalen Seitenfluss #}
+    <div class="sticky bottom-16 z-20 -mx-4 flex gap-2 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur md:static md:mx-0 md:border-0 md:bg-transparent md:p-0">
+      <button name="aktion" value="speichern" class="btn-primary flex-1 md:flex-none">Speichern</button>
+      {% if obj and obj.hat_spesen and not quittung %}<button name="aktion" value="quittung" class="btn-secondary flex-1 md:flex-none"><span class="md:hidden">+ Quittung</span><span class="hidden md:inline">Speichern & Quittung erstellen</span></button>{% endif %}
+      <a href="{% url 'sr:einsaetze' %}" class="btn-secondary hidden md:inline-flex">Zurück</a>
+      {% if obj %}<button name="aktion" value="loeschen" class="btn-danger ml-auto hidden md:inline-flex" formnovalidate onclick="return confirm('Einsatz wirklich löschen?')">Löschen</button>{% endif %}
+    </div>
+    <div class="flex gap-2 md:hidden">
+      <a href="{% url 'sr:einsaetze' %}" class="btn-secondary flex-1">Zurück</a>
+      {% if obj %}<button name="aktion" value="loeschen" class="btn-danger flex-1" formnovalidate onclick="return confirm('Einsatz wirklich löschen?')">Löschen</button>{% endif %}
     </div>
   </div>
 

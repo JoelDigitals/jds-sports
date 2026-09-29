@@ -1,21 +1,35 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="mb-5 flex flex-wrap items-end justify-between gap-3">
-  <div>
-    <div class="text-xs font-semibold uppercase tracking-wide text-orange-600">🟨 Schiedsrichter</div>
-    <h1 class="text-2xl font-bold">{% block h1 %}{% endblock %}</h1>
-    <p class="text-sm text-slate-500">{% block untertitel %}{% endblock %}</p>
+{% with n=request.resolver_match.url_name %}
+<div class="pb-24 md:pb-0">
+  <div class="mb-4 flex flex-wrap items-end justify-between gap-3 sm:mb-5">
+    <div class="min-w-0">
+      <div class="text-xs font-semibold uppercase tracking-wide text-orange-600">🟨 Schiedsrichter</div>
+      <h1 class="truncate text-xl font-bold sm:text-2xl">{% block h1 %}{% endblock %}</h1>
+      <p class="text-sm text-slate-500">{% block untertitel %}{% endblock %}</p>
+    </div>
+    <div class="flex w-full flex-wrap gap-2 sm:w-auto [&>*]:flex-1 sm:[&>*]:flex-none">{% block aktionen %}{% endblock %}</div>
   </div>
-  <div class="flex gap-2">{% block aktionen %}{% endblock %}</div>
+
+  {# Reiter oben ab Tablet-Breite #}
+  <nav class="mb-6 hidden gap-1 overflow-x-auto overflow-y-hidden border-b border-slate-200 text-sm md:flex">
+    <a href="{% url 'sr:dashboard' %}" class="-mb-px whitespace-nowrap border-b-2 px-3 py-2 font-medium {% if n == 'dashboard' %}border-orange-600 text-orange-700{% else %}border-transparent text-slate-500 hover:text-slate-800{% endif %}">Dashboard</a>
+    <a href="{% url 'sr:einsaetze' %}" class="-mb-px whitespace-nowrap border-b-2 px-3 py-2 font-medium {% if n == 'einsaetze' or n == 'einsatz' or n == 'einsatz_neu' %}border-orange-600 text-orange-700{% else %}border-transparent text-slate-500 hover:text-slate-800{% endif %}">Einsätze</a>
+    <a href="{% url 'sr:import' %}" class="-mb-px whitespace-nowrap border-b-2 px-3 py-2 font-medium {% if n == 'import' or n == 'import_pruefen' %}border-orange-600 text-orange-700{% else %}border-transparent text-slate-500 hover:text-slate-800{% endif %}">Kalender-Import</a>
+    <a href="{% url 'sr:quittungen' %}" class="-mb-px whitespace-nowrap border-b-2 px-3 py-2 font-medium {% if n == 'quittungen' %}border-orange-600 text-orange-700{% else %}border-transparent text-slate-500 hover:text-slate-800{% endif %}">Quittungen</a>
+    <a href="{% url 'sr:auswertung' %}" class="-mb-px whitespace-nowrap border-b-2 px-3 py-2 font-medium {% if n == 'auswertung' %}border-orange-600 text-orange-700{% else %}border-transparent text-slate-500 hover:text-slate-800{% endif %}">Auswertung</a>
+  </nav>
+
+  {% block sr_content %}{% endblock %}
 </div>
-<nav class="mb-6 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-slate-200 text-sm">
-  {% with n=request.resolver_match.url_name %}
-  <a href="{% url 'sr:dashboard' %}" class="-mb-px whitespace-nowrap border-b-2 px-3 py-2 font-medium {% if n == 'dashboard' %}border-orange-600 text-orange-700{% else %}border-transparent text-slate-500 hover:text-slate-800{% endif %}">Dashboard</a>
-  <a href="{% url 'sr:einsaetze' %}" class="-mb-px whitespace-nowrap border-b-2 px-3 py-2 font-medium {% if n == 'einsaetze' or n == 'einsatz' or n == 'einsatz_neu' %}border-orange-600 text-orange-700{% else %}border-transparent text-slate-500 hover:text-slate-800{% endif %}">Einsätze</a>
-  <a href="{% url 'sr:import' %}" class="-mb-px whitespace-nowrap border-b-2 px-3 py-2 font-medium {% if n == 'import' or n == 'import_pruefen' %}border-orange-600 text-orange-700{% else %}border-transparent text-slate-500 hover:text-slate-800{% endif %}">Kalender-Import</a>
-  <a href="{% url 'sr:quittungen' %}" class="-mb-px whitespace-nowrap border-b-2 px-3 py-2 font-medium {% if n == 'quittungen' %}border-orange-600 text-orange-700{% else %}border-transparent text-slate-500 hover:text-slate-800{% endif %}">Quittungen</a>
-  <a href="{% url 'sr:auswertung' %}" class="-mb-px whitespace-nowrap border-b-2 px-3 py-2 font-medium {% if n == 'auswertung' %}border-orange-600 text-orange-700{% else %}border-transparent text-slate-500 hover:text-slate-800{% endif %}">Auswertung</a>
-  {% endwith %}
+
+{# Handy: Navigation unten wie in einer App (Daumen-Reichweite) #}
+<nav class="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-slate-200 bg-white/95 text-[11px] font-medium backdrop-blur md:hidden" style="padding-bottom: env(safe-area-inset-bottom)">
+  <a href="{% url 'sr:dashboard' %}" class="flex flex-col items-center gap-0.5 py-2 {% if n == 'dashboard' %}text-orange-600{% else %}text-slate-500{% endif %}"><span class="text-lg leading-none">🏠</span>Start</a>
+  <a href="{% url 'sr:einsaetze' %}" class="flex flex-col items-center gap-0.5 py-2 {% if n == 'einsaetze' or n == 'einsatz' or n == 'einsatz_neu' %}text-orange-600{% else %}text-slate-500{% endif %}"><span class="text-lg leading-none">📅</span>Einsätze</a>
+  <a href="{% url 'sr:import' %}" class="flex flex-col items-center gap-0.5 py-2 {% if n == 'import' or n == 'import_pruefen' %}text-orange-600{% else %}text-slate-500{% endif %}"><span class="text-lg leading-none">⬇️</span>Import</a>
+  <a href="{% url 'sr:quittungen' %}" class="flex flex-col items-center gap-0.5 py-2 {% if n == 'quittungen' %}text-orange-600{% else %}text-slate-500{% endif %}"><span class="text-lg leading-none">🧾</span>Quittungen</a>
+  <a href="{% url 'sr:auswertung' %}" class="flex flex-col items-center gap-0.5 py-2 {% if n == 'auswertung' %}text-orange-600{% else %}text-slate-500{% endif %}"><span class="text-lg leading-none">📊</span>Auswertung</a>
 </nav>
-{% block sr_content %}{% endblock %}
+{% endwith %}
 {% endblock %}

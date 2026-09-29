@@ -152,6 +152,14 @@ class Halle(models.Model):
         return f'{self.name} ({self.nummer})' if self.nummer else self.name
 
 
+class ImportAnalyse(models.Model):
+    """Zwischenstand eines Imports (Vorschau vor der Übernahme) – zu groß für das Session-Cookie."""
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='+')
+    daten = models.JSONField()
+    erstellt = models.DateTimeField(auto_now_add=True)
+
+
 class GeoCache(models.Model):
     query = models.CharField(max_length=300, primary_key=True)
     lat = models.FloatField(null=True)

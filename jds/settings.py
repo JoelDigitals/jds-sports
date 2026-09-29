@@ -93,9 +93,10 @@ if _db['ENGINE'] == 'django.db.backends.sqlite3':
     # km-Berechnung schreibt im Hintergrund – kurz warten statt „database is locked“
     _db.setdefault('OPTIONS', {})['timeout'] = 20
 elif str(_db.get('PORT')) == '6543' or 'pooler' in str(_db.get('HOST', '')):
-    # Supabase/pgBouncer im Transaktionsmodus: keine dauerhaften Verbindungen,
-    # keine serverseitigen Cursor und keine vorbereiteten Statements (psycopg 3)
-    _db['CONN_MAX_AGE'] = 0
+    # Supabase/pgBouncer im Transaktionsmodus: keine serverseitigen Cursor und keine vorbereiteten Statements
+    # (psycopg 3). Die Verbindung zum Pooler wird trotzdem wiederverwendet – jeder Neuaufbau kostet mehrere Roundtrips.
+    _db['CONN_MAX_AGE'] = 60
+    _db['CONN_HEALTH_CHECKS'] = True
     _db['DISABLE_SERVER_SIDE_CURSORS'] = True
     _db.setdefault('OPTIONS', {})['prepare_threshold'] = None
 else:
@@ -104,8 +105,14 @@ else:
 
 AUTH_USER_MODEL = 'accounts.User'
 
-# bcrypt zusätzlich, damit Konten aus der alten Node-App übernommen werden können
+# Sessions im signierten Cookie statt in der Datenbank – spart bei jedem Seitenaufruf Datenbank-Roundtrips
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+SESSION_COOKIE_HTTPONLY = True
+MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
+
+# bcrypt (schnell genug für kleine Server, sicher); PBKDF2/bcrypt bleiben lesbar für bestehende Passwörter
 PASSWORD_HASHERS = [
+    'jds.hashers.SchnellerBCryptHasher',
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
     'django.contrib.auth.hashers.BCryptPasswordHasher',
 ]
@@ -127,6 +134,7 @@ USE_TZ = False
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static']  # static/css/app.css = gebautes Tailwind (frontend/)
 STORAGES = {
     'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
     'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage' if not DEBUG

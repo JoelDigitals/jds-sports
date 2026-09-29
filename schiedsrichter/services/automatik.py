@@ -11,6 +11,7 @@ import threading
 from datetime import date, datetime, timedelta
 
 from django.conf import settings
+from django.core.cache import cache
 from django.db import close_old_connections
 
 from ..models import Assignment, Receipt
@@ -32,8 +33,15 @@ QUITTUNG_VORLAUF = timedelta(days=3)
 QUITTUNG_NACHLAUF = timedelta(days=7)
 QUITTUNG_FUER = ('angesetzt', 'bestätigt', 'verlegt', 'geleitet', 'ausgefallen_angereist')
 
+# Wie oft die Pflege je Nutzer höchstens läuft (Sekunden) – nach Import/Speichern wird sie sofort neu angestoßen
+PFLEGE_INTERVALL = 300
+
 _laufend: set[int] = set()
 _lock = threading.Lock()
+
+
+def _hintergrund() -> bool:
+    return getattr(settings, 'KM_IM_HINTERGRUND', True)
 
 
 def _als_geleitet(qs, grund: str) -> int:
@@ -132,10 +140,10 @@ def km_berechnen_im_hintergrund(user) -> bool:
             with _lock:
                 _laufend.discard(user.pk)
 
-    if getattr(settings, 'KM_IM_HINTERGRUND', True):
+    if _hintergrund() and threading.current_thread() is threading.main_thread():
         threading.Thread(target=lauf, name=f'km-{user.pk}', daemon=True).start()
     else:
-        lauf()  # Tests: synchron
+        lauf()  # Tests bzw. bereits im Hintergrund-Thread: direkt rechnen
     return True
 
 
@@ -151,11 +159,58 @@ def adresse_geaendert(user) -> None:
     km_berechnen_im_hintergrund(user)
 
 
-def pflegen(user) -> dict:
-    """Beim Öffnen der Übersichten aufrufen."""
+def _pflegen_jetzt(user) -> dict:
     hallen.alle_erkennen(Assignment.objects.filter(user=user))  # Hallen anlegen, Nummern lernen/übernehmen
     return {
         'abgeschlossen': spiele_abschliessen(user),
         'quittungen': quittungen_bereitstellen(user),
         'km_laeuft': km_berechnen_im_hintergrund(user),
     }
+
+
+def _meldungen(res: dict) -> list[tuple[str, str]]:
+    out = []
+    if res['abgeschlossen']:
+        out.append(('info', f"{res['abgeschlossen']} vergangene(s) Spiel(e) automatisch als geleitet markiert."))
+    for r in res['quittungen']:
+        spiele = ', '.join(a.begegnung for a in r.assignments.all())
+        out.append(('success', f'Abrechnungsbogen bereit: Quittung Nr. {r.pk} für {spiele}.'))
+    return out
+
+
+def anstossen(user) -> None:
+    """Nach Import/Speichern: beim nächsten Seitenaufruf sofort pflegen."""
+    cache.delete(f'automatik:{user.pk}')
+
+
+def pflegen(user) -> dict:
+    """Beim Öffnen der Übersichten aufrufen.
+
+    Auf dem Server läuft die Pflege im Hintergrund und höchstens alle PFLEGE_INTERVALL Sekunden je Nutzer –
+    die Seite wartet nicht darauf. Meldungen erscheinen beim nächsten Seitenaufruf. In Tests läuft alles synchron.
+    """
+    if not _hintergrund():
+        res = _pflegen_jetzt(user)
+        return {**res, 'meldungen': _meldungen(res)}
+
+    meldungen = cache.get(f'automatik-meldungen:{user.pk}') or []
+    if meldungen:
+        cache.delete(f'automatik-meldungen:{user.pk}')
+    ergebnis = {'abgeschlossen': 0, 'quittungen': [], 'meldungen': meldungen, 'km_laeuft': km_laeuft(user)}
+    if not cache.add(f'automatik:{user.pk}', True, timeout=PFLEGE_INTERVALL):
+        return ergebnis  # vor Kurzem erst gelaufen
+
+    def lauf():
+        try:
+            close_old_connections()
+            res = _pflegen_jetzt(user)
+            neue = _meldungen(res)
+            if neue:
+                cache.set(f'automatik-meldungen:{user.pk}', (cache.get(f'automatik-meldungen:{user.pk}') or []) + neue, 3600)
+        except Exception:
+            logger.exception('Automatische Pflege fehlgeschlagen (Nutzer %s)', user.pk)
+        finally:
+            close_old_connections()
+
+    threading.Thread(target=lauf, name=f'pflege-{user.pk}', daemon=True).start()
+    return ergebnis
